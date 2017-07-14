@@ -2,4 +2,4 @@
 /matrix.h
 /vscode
 /.*~
- 
+/CMakeLists.txt* 
