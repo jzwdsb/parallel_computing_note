@@ -7,6 +7,8 @@
 #include <sstream>
 #include <mpi/mpi.h>
 #include <functional>
+#include <cmath>
+
 #define MAX_STRING  100
 
 double Trap(std::function<double(double)>, double, double, int, double);
@@ -24,7 +26,7 @@ int main(int argc, char * argv[])
     local_a = a + my_rank * local_n * h;
     local_b = local_a + local_n * h;
     local_int = Trap(fun, local_a, local_b, local_n, h);
-    if(my_rank not_eq 0)
+    /*if(my_rank not_eq 0)
     {
         MPI_Send(&local_int, 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
     }
@@ -37,6 +39,9 @@ int main(int argc, char * argv[])
             total_int += local_int;
         }
     }
+*/
+    //mpi　的集合通信函数，归约函数，将所有进程的 local_int 累加到 0 号进程的total_int 上
+    MPI_Reduce(&local_int, &total_int, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
     if(my_rank == 0)
     {
@@ -49,7 +54,7 @@ int main(int argc, char * argv[])
 //　先试试简单函数
 double fun(double x)
 {
-    return 3.0 * x + 5.0 ;
+    return x;
 }
 
 double Trap(std::function<double(double)> f, double left_endpt, double right_endpt, int trap_count, double base_len)
