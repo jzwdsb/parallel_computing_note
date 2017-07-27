@@ -45,6 +45,7 @@ void COO_SpareMatrix::helpInit(const simpleMatrix &mat)
 
 rowElement COO_SpareMatrix::getRow(size_t r)
 {
+    assert(r < this->rows);
     vector<size_t> col_indices;
     vector<double> values;
 
@@ -62,6 +63,7 @@ rowElement COO_SpareMatrix::getRow(size_t r)
 
 double COO_SpareMatrix::getEle(size_t r, size_t c)
 {
+    assert(r < this->rows and c < this->cols);
     size_t index;
     index = static_cast<size_t>(std::find(this->row.begin(), this->row.end(), r) - this->row.begin());
     while(r == this->row[index] and c not_eq this->col[index])
@@ -105,10 +107,13 @@ void CSR_SpareMatrix::helpInit(const simpleMatrix &mat)
             }
         }
     }
+    this->ele_count = this->values.size();
+    this->max_ele_count = this->rows * this->cols ;
 }
 
 rowElement CSR_SpareMatrix::getRow(size_t r)
 {
+    assert(r < this->rows);
     vector<size_t> colIndices;
     vector<double> vals;
 
@@ -127,6 +132,7 @@ rowElement CSR_SpareMatrix::getRow(size_t r)
 
 double CSR_SpareMatrix::getEle(size_t r, size_t c)
 {
+    assert(r < this->rows and c < this->cols);
     size_t row_length = this->row_offset[r + 1] - this->row_offset[r];
     size_t offset = this->row_offset[r];
     if(row_length == 0)
@@ -134,25 +140,67 @@ double CSR_SpareMatrix::getEle(size_t r, size_t c)
     while(offset < this->row_offset[r + 1] and this->col[offset++] not_eq c)  ;
     if (offset == this->row_offset[r + 1])
         return 0;
-    return this->values[offset];:
+    return this->values[offset];
 }
 
 
 ELL_SpareMatrix::ELL_SpareMatrix(const simpleMatrix &mat)
 {
-    size_t rows = mat.size();
-    size_t cols = mat[0].size();
-    for(size_t r = 0; r < rows; ++r)
-    {
-        for (size_t c = 0; c < cols; ++c)
-        {
-            if(mat[r][c] > 1e-6)
-            {
+    helpInit(mat);
+}
 
+
+ELL_SpareMatrix &ELL_SpareMatrix::operator=(const simpleMatrix &mat)
+{
+    this->col_indices.clear();
+    this->values.clear();
+    helpInit(mat);
+    return *this;
+
+}
+
+
+void ELL_SpareMatrix::helpInit(const simpleMatrix &mat)
+{
+    this->rows = mat.size();
+    this->cols = mat[0].size();
+    size_t eleNum = 0;
+    for (size_t r = 0; r < this->rows; ++r)
+    {
+        for (size_t c = 0; c < this->cols; ++c)
+        {
+            this->col_indices.emplace_back();
+            this->values.emplace_back();
+            if(mat[r][c] not_eq 0)
+            {
+                this->col_indices[r].push_back(c);
+                this->values[r].push_back(mat[r][c]);
+                ++eleNum;
             }
         }
     }
+    this->ele_count = eleNum;
+    this->max_ele_count = this->rows * this->cols;
 }
+
+rowElement ELL_SpareMatrix::getRow(size_t r)
+{
+    assert(r < this->rows);
+    return std::make_pair(this->col_indices[r], this->values[r]);
+}
+
+double ELL_SpareMatrix::getEle(size_t r, size_t c)
+{
+    assert(r < this->rows and c < this->cols);
+    size_t i = 0;
+    while(i < this->col_indices[r].size() and i not_eq this->col_indices[r][i])
+        ++i;
+    if (i == this->col_indices[r].size())
+        return 0;
+    return this->values[r][i];
+}
+
+
 
 
 
