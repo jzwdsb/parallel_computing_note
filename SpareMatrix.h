@@ -7,7 +7,9 @@
 
 #include <vector>
 #include <cstddef>
+#include <cfloat>
 
+#define NON_EXIST       DBL_MAX
 // 基本矩阵类型
 using simpleMatrix = std::vector<std::vector<double>>;
 
@@ -18,6 +20,7 @@ using rowElement = std::pair<std::vector<size_t>, std::vector<double>>;
 class SpareMatrix
 {
 public:
+
     virtual rowElement getRow(size_t r) = 0;
     virtual double getEle(size_t r, size_t c) = 0;
 };
@@ -118,6 +121,7 @@ public:
     rowElement getRow(size_t r) override;
     double getEle(size_t r, size_t c) override;
 private:
+    void helpInit(const simpleMatrix& mat);
     size_t rows, cols;
     size_t ele_count;
     size_t max_ele_count;

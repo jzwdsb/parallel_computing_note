@@ -8,6 +8,7 @@
 
 using std::vector;
 
+
 COO_SpareMatrix::COO_SpareMatrix(const simpleMatrix & mat)
 {
     helpInit(mat);
@@ -99,7 +100,7 @@ void CSR_SpareMatrix::helpInit(const simpleMatrix &mat)
         this->row_offset.push_back(rowOffset);
         for (size_t c = 0; c < this->cols; ++c)
         {
-            if (mat[r][c] not_eq 0)
+            if (mat[r][c] > 1e-6)
             {
                 this->col.push_back(c);
                 this->values.push_back(mat[r][c]);
@@ -171,7 +172,7 @@ void ELL_SpareMatrix::helpInit(const simpleMatrix &mat)
         {
             this->col_indices.emplace_back();
             this->values.emplace_back();
-            if(mat[r][c] not_eq 0)
+            if(mat[r][c] > 1e-6)
             {
                 this->col_indices[r].push_back(c);
                 this->values[r].push_back(mat[r][c]);
@@ -201,6 +202,58 @@ double ELL_SpareMatrix::getEle(size_t r, size_t c)
 }
 
 
+DLA_SpareMatrix::DLA_SpareMatrix(const simpleMatrix &mat)
+{
+    helpInit(mat);
+}
+
+DLA_SpareMatrix &DLA_SpareMatrix::operator=(const simpleMatrix &mat)
+{
+    this->values.clear();
+    helpInit(mat);
+}
+
+void DLA_SpareMatrix::helpInit(const simpleMatrix &mat)
+{
+    this->rows = mat.size();
+    this->cols = mat[0].size();
+    size_t dia_num = this->rows >= this->cols ?
+                            this->rows * 2 - 1 : this->cols * 2 - 1;
+    size_t c_ = 0;
+    vector<vector<double>> diagonal;
 
 
+    for (size_t i = 0; i < dia_num; ++i)
+    {
+        size_t r, r_ = i < this->rows ? this->rows - i -1 : 0;
+        size_t c, c__ = i < this->rows ? 0 : c_++;
+        size_t no_zero_count = 0;
+        r = r_;
+        c = c__;
+        diagonal.emplace_back();
+        while(r < this->rows and c < this->cols)
+        {
+            if (mat[r][c] > 1e-6)
+            {
+                ++no_zero_count;
+            }
+            ++r, ++c;
+        }
+        if(no_zero_count not_eq 0)
+        {
+            //TODO here implement the DIA
+        }
+    }
 
+}
+
+
+rowElement DLA_SpareMatrix::getRow(size_t r)
+{
+}
+
+double DLA_SpareMatrix::getEle(size_t r, size_t c)
+{
+
+
+}
