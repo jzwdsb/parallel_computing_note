@@ -4,4 +4,5 @@
 /.*~
 /CMakeLists.txt*
 .idea/
+mpi_greeting.cpp
 cmake-build-debug/
